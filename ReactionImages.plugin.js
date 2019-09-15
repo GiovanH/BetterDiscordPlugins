@@ -1,11 +1,11 @@
-//META{"name":"ReactionImages","website":"https://metalloriff.github.io/toms-discord-stuff/","source":"https://github.com/Metalloriff/BetterDiscordPlugins/blob/master/ReactionImages.plugin.js"}*//
+//META{"name":"ReactionImagesR","website":"about:blank","source":"about:blank"}*//
 
-class ReactionImages {
+class ReactionImagesR {
 
-	getName() { return "ReactionImages"; }
+	getName() { return "ReactionImagesR"; }
 	getDescription() { return "Allows you to set reaction image folders and send reaction images with 'Folder Name/reaction image name'."; }
 	getVersion() { return "1.1.3"; }
-	getAuthor() { return "Metalloriff"; }
+	getAuthor() { return "Metalloriff & Gio"; }
 	getChanges() {
 		return {
 
@@ -190,7 +190,7 @@ class ReactionImages {
 	}
 
 	async refreshFolderDatas() {
-		NeatoLib.showToast("ReactionImages: Loading reaction data and generating icons.");
+		NeatoLib.showToast("ReactionImagesR: Loading reaction data and generating icons.");
 		this.folders = JSON.parse(JSON.stringify(this.settings.folders));
 
 		let completed = 0;
@@ -203,8 +203,16 @@ class ReactionImages {
 			this.fs.readdir(this.settings.folders[i].path, async (err, list) => {
 				if (err) return console.error(err);
 
-				for (let ii = 0; ii < list.length; ii++) {
-					if (!list[ii].includes(".")) continue;
+				length = list.length
+				for (let ii = 0; ii < length; ii++) {
+					if (this.fs.lstatSync(this.settings.folders[i].path + "/" + list[ii]).isDirectory()) {
+						// The file doesn't have an extension, therefore it is a folder. 
+						let listapp = this.fs.readdirSync(this.settings.folders[i].path + "/" + list[ii])
+						listapp = listapp.filter(a => a.includes("."))
+						listapp = listapp.map((a) => {return list[ii] + "/" + a})
+						list = list.concat(listapp)
+						length = list.length //Resize loop
+					}
 
 					const ext = list[ii].split(".")[list[ii].split(".").length - 1];
 					if (!["jpg", "jpeg", "png", "gif", "bmp"].includes(ext)) continue;
@@ -261,7 +269,7 @@ class ReactionImages {
 
 		while (completed < Object.keys(this.folders).length) await NeatoLib.Thread.sleep(100);
 
-		NeatoLib.showToast("ReactionImages: Finished loading files and generating icons.", "success");
+		NeatoLib.showToast("ReactionImagesR: Finished loading files and generating icons.", "success");
 		setTimeout(() => this.saveSettings(), 100);
 	}
 
